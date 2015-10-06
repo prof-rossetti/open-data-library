@@ -69,6 +69,18 @@ LINES TERMINATED BY '\n' -- mac-style line breaks
   IGNORE 1 LINES
 ;
 
-SELECT * FROM dc_parks;
+-- which column(s) can/should be the primary key?
+SELECT
+  `OBJECTID`
+  ,count(*) AS row_count
+FROM dc_parks
+GROUP BY `OBJECTID`
+HAVING row_count > 1; -- 0 rows (`OBJECTID` is a good pk candidate)
 
---todo: indices and datatype conversions...
+-- add indices ...
+
+ALTER TABLE dc_parks ADD PRIMARY KEY(OBJECTID);
+
+-- show end results ...
+
+SELECT * FROM dc_parks;

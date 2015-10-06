@@ -34,6 +34,21 @@ LINES TERMINATED BY '\n' -- mac-style line breaks
 -- what are the physical storage requirements in terms of the `PO Amount` column? ...
 SELECT max(length(`PO Amount`)) FROM temp_dc_purchase_orders; -- 11 digits/characters
 
+-- which column(s) can/should be the primary key?
+SELECT
+  `OBJECTID`
+  ,count(*) AS row_count
+FROM temp_dc_purchase_orders
+GROUP BY `OBJECTID`
+HAVING row_count > 1; -- 0 rows (`OBJECTID` is a good pk candidate)
+
+SELECT
+  `PO_#`
+  ,count(*) AS row_count
+FROM temp_dc_purchase_orders
+GROUP BY `PO_#`
+HAVING row_count > 1; -- a lot of rows (`PO_#` is NOT a good pk candidate)
+
 -- transform the staging data into a more usable/friendly form ...
 DROP TABLE IF EXISTS dc_purchase_orders;
 CREATE TABLE dc_purchase_orders AS (
@@ -58,8 +73,11 @@ CREATE TABLE dc_purchase_orders AS (
   FROM temp_dc_purchase_orders AS po
 );
 
+-- add indices ...
+ALTER TABLE dc_purchase_orders ADD PRIMARY KEY(order_id);
+
+-- clean-up ...
 DROP TABLE IF EXISTS temp_dc_purchase_orders;
 
+-- show end results ...
 SELECT * FROM dc_purchase_orders;
-
---todo: indices ...
