@@ -1,8 +1,4 @@
-/*
-
-IMPORT data/parks_2015.csv
-
-*/
+/* Import data/dc_parks.csv */
 
 -- mysql:
 

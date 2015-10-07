@@ -1,10 +1,7 @@
-/*
-
-IMPORT data/purchase_orders_2015.csv
-
-*/
+/* Import data/dc_purchase_orders.csv */
 
 -- reference: http://stackoverflow.com/questions/17566573/convert-month-shortname-to-month-number
+
 -- mysql:
 
 -- create a "staging" table to temporarily house the data...

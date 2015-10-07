@@ -1,0 +1,14 @@
+/* Import data/us_populations.csv */
+
+-- mysql:
+
+CREATE TABLE `us_populations` (
+  `SUMLEV` int(11) DEFAULT NULL,
+  `REGION` varchar(255) DEFAULT NULL,
+  `DIVISION` varchar(255) DEFAULT NULL,
+  `STATE` int(11) DEFAULT NULL,
+  `NAME` varchar(255) DEFAULT NULL,
+  `POPESTIMATE2013` bigint(11) DEFAULT NULL,
+  `POPEST18PLUS2013` bigint(11) DEFAULT NULL,
+  `PCNT_POPEST18PLUS` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
