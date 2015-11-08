@@ -10,7 +10,6 @@ Reference the [data directory](/data).
 file_name | dataset_title | downloaded_on | source_url | original_file_name
 --- | --- | --- | --- | ---
 `chicago_crimes.csv` | Chicago Crimes | TBA | TBA | TBA
-`cfpb_complaints.csv` | US Consumer Protection Bureau Customer Complaint Database | 2015-10-31 | https://data.consumerfinance.gov/api/views/s6ew-h6mp/rows.csv?accessType=DOWNLOAD | `Consumer_Complaints.csv`
 `dc_agency_goals.csv` | Washington DC Agency Goals | TBA | TBA | TBA
 `dc_gas_stations.csv` | Washington DC Gas Stations | TBA | TBA | TBA
 `dc_historic_districts.csv` | Washington DC Historic Site Designations | TBA | TBA | TBA
