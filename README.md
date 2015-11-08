@@ -1,7 +1,13 @@
-# Open Data Reference
+# Open Data Library
 
-A limited collection of data from http://opendata.dc.gov/ and other sources,
+A limited collection of open data,
  copied here for instructional reference.
+
+Download from the web:
+
+```` sh
+git clone git@github.com:gwu-business/open-data-library.git
+````
 
 ## Instructional Datasets
 
@@ -21,3 +27,11 @@ file_name | dataset_title | downloaded_on | source_url | original_file_name
 `us_schools.csv` | United States Institutions of Higher Education | TBA | TBA | TBA
 `us_university_leaders.csv` | United States University Leaders | TBA | TBA | TBA
 `worldwide_internet_penetration.csv` | World Bank Internet Penetration by country over time | 1015-10-31 | http://databank.worldbank.org/data/reports.aspx?Id=3bdec3cd&Report_Name=Internet-%EF%BF%BCPenetration-over-time | `Internet Penetration over time_Data.csv`
+
+## Instructional Datasets
+
+Reference the [relational data directory](/relational-data).
+
+directory_name | dataset_title | downloaded_on | source_url
+--- | --- | --- | ---
+`evanston_healthscores` | Evanston, IL Health and Safety Inspections | 2015-11-08 | http://opendata-hub.cloudapp.net/lives/yelp_evanston_healthscores.zip
