@@ -9,7 +9,7 @@ Download from the web:
 git clone git@github.com:gwu-business/open-data-library.git
 ````
 
-## Instructional Datasets
+## Single-table Datasets
 
 Reference the [data directory](/data).
 
@@ -28,7 +28,7 @@ file_name | dataset_title | downloaded_on | source_url | original_file_name
 `us_university_leaders.csv` | United States University Leaders | TBA | TBA | TBA
 `worldwide_internet_penetration.csv` | World Bank Internet Penetration by country over time | 1015-10-31 | http://databank.worldbank.org/data/reports.aspx?Id=3bdec3cd&Report_Name=Internet-%EF%BF%BCPenetration-over-time | `Internet Penetration over time_Data.csv`
 
-## Instructional Datasets
+## Relational Datasets
 
 Reference the [relational data directory](/relational-data).
 
