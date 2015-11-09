@@ -9,15 +9,16 @@ CREATE DATABASE evanston_healthscores;
 /*
   FEED INFO
 */
+
 DROP TABLE IF EXISTS evanston_healthscores.feed_info_temp;
 
 CREATE TABLE evanston_healthscores.feed_info_temp (
-  `feed_date` int(11) DEFAULT NULL,
-  `feed_version` varchar(255) DEFAULT NULL,
-  `municipality_name` varchar(255) DEFAULT NULL,
-  `municipality_url` varchar(255) DEFAULT NULL,
-  `contact_email` varchar(255) DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `feed_date` INT(11) DEFAULT NULL,
+  `feed_version` VARCHAR(255) DEFAULT NULL,
+  `municipality_name` VARCHAR(255) DEFAULT NULL,
+  `municipality_url` VARCHAR(255) DEFAULT NULL,
+  `contact_email` VARCHAR(255) DEFAULT NULL
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 LOAD DATA LOCAL INFILE '~/projects/gwu-business/open-data-library/relational-data/evanston_healthscores/feed_info.csv'
 INTO TABLE evanston_healthscores.feed_info_temp
@@ -83,7 +84,7 @@ SELECT business_id, count(*) AS row_count
 FROM evanston_healthscores.businesses
 GROUP BY business_id
 HAVING row_count > 1
-ORDER BY row_count DESC; -- verify uniqueness of business_id attribute
+ORDER BY row_count DESC; -- 0 rows means business_id is unique
 
 ALTER TABLE evanston_healthscores.businesses ADD PRIMARY KEY(business_id);
 
@@ -111,19 +112,19 @@ LINES TERMINATED BY '\n' -- mac-style line breaks
 SELECT
   business_id
  , count(*) AS row_count
-FROM inspections_temp
+FROM evanston_healthscores.inspections_temp
 GROUP BY business_id
 HAVING row_count > 1
-ORDER BY 2 DESC; -- business_id is not a primary key
+ORDER BY 2 DESC; -- more than 0 rows means business_id is not a primary key
 
 SELECT
   i.business_id
   ,i.date
  , count(*) AS row_count
-FROM inspections_temp i
+FROM evanston_healthscores.inspections_temp i
 GROUP BY 1,2
 HAVING row_count > 1
-ORDER BY 3 DESC; -- business_id and date do not comprise a composite primary key...
+ORDER BY 3 DESC; -- more than 0 rows means business_id and date do not comprise a composite primary key...
 
 DROP TABLE IF EXISTS evanston_healthscores.inspections;
 SET @row_num = 0;
@@ -153,10 +154,10 @@ DROP TABLE IF EXISTS evanston_healthscores.inspections_temp; -- clean-up
 
 DROP TABLE IF EXISTS evanston_healthscores.violations_temp;
 CREATE TABLE evanston_healthscores.violations_temp (
-  `business_id` varchar(255) DEFAULT NULL,
-  `date` int(11) DEFAULT NULL,
-  `code` varchar(255) DEFAULT NULL,
-  `description` text
+  `business_id` VARCHAR(255) DEFAULT NULL,
+  `date` INT(11) DEFAULT NULL,
+  `code` VARCHAR(255) DEFAULT NULL,
+  `description` TEXT
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 LOAD DATA LOCAL INFILE '~/projects/gwu-business/open-data-library/relational-data/evanston_healthscores/violations.csv'
@@ -171,19 +172,19 @@ LINES TERMINATED BY '\n' -- mac-style line breaks
 SELECT
   business_id
  , count(*) AS row_count
-FROM violations_temp
+FROM evanston_healthscores.violations_temp
 GROUP BY business_id
 HAVING row_count > 1
-ORDER BY 2 DESC; -- business_id is not a primary key
+ORDER BY 2 DESC; --  more than 0 rows means business_id is not a primary key
 
 SELECT
   i.business_id
   ,i.date
  , count(*) AS row_count
-FROM violations_temp i
+FROM evanston_healthscores.violations_temp i
 GROUP BY 1,2
 HAVING row_count > 1
-ORDER BY 3 DESC; -- business_id and date do not comprise a composite primary key...
+ORDER BY 3 DESC; -- more than 0 rows means business_id and date do not comprise a composite primary key...
 
 DROP TABLE IF EXISTS evanston_healthscores.violations;
 SET @row_num = 0;
@@ -206,3 +207,68 @@ CREATE TABLE  evanston_healthscores.violations AS (
 );
 
 DROP TABLE IF EXISTS evanston_healthscores.violations_temp; -- clean-up
+
+
+/*
+  REPORTS
+*/
+
+/*
+  BUSINESS INSPECTIONS
+*/
+
+SELECT *
+FROM evanston_healthscores.businesses b
+LEFT JOIN evanston_healthscores.inspections i ON i.business_id = b.business_id
+WHERE i.business_id IS NULL; -- 0 rows means all businesses in the dataset have been inspected at least once
+
+SELECT *
+FROM evanston_healthscores.businesses b
+RIGHT JOIN evanston_healthscores.inspections i ON i.business_id = b.business_id
+WHERE b.business_id IS NULL; -- 0 rows means all inspections in the dataset correspond to a business in the dataset
+
+DROP TABLE IF EXISTS evanston_healthscores._business_inspections_report;
+CREATE TABLE evanston_healthscores._business_inspections_report AS (
+    -- 1340 rows (1 per business per inspection)
+    SELECT
+      b.business_id
+      ,b.name AS business_name
+      ,b.address AS business_address
+      ,b.postal_code AS business_postal_code
+      ,i.id AS inspection_id
+      ,i.date AS inspection_date
+      ,i.type AS inspection_type
+      ,i.score AS inspection_score
+    FROM evanston_healthscores.businesses b
+    JOIN evanston_healthscores.inspections i ON i.business_id = b.business_id
+    ORDER BY business_name, inspection_date, inspection_type
+);
+
+/*
+  BUSINESS VIOLATIONS
+*/
+
+SELECT *
+FROM evanston_healthscores.businesses b
+LEFT JOIN evanston_healthscores.violations v ON v.business_id = b.business_id
+WHERE v.business_id IS NULL; -- 0 rows means all businesses in the dataset have at least one violation
+
+SELECT *
+FROM evanston_healthscores.businesses b
+RIGHT JOIN evanston_healthscores.violations v ON v.business_id = b.business_id
+WHERE b.business_id IS NULL; -- 0 rows means all violations in the dataset correspond to a business in the dataset
+
+DROP TABLE IF EXISTS evanston_healthscores._business_violations_report;
+CREATE TABLE evanston_healthscores._business_violations_report AS (
+  SELECT
+    v.id AS violation_id
+    ,v.business_id
+    ,v.date AS violation_date
+    ,v.code AS violation_code_full
+    ,substring(v.code, 2,
+      LOCATE(')', v.code) - 2
+    ) AS code_violation_number
+    ,v.description AS violation_description
+    ,IF(v.description LIKE "%CRITICAL VIOLATION%",1,0) AS violation_critical
+  FROM evanston_healthscores.violations v
+);
