@@ -1,5 +1,6 @@
 /*
   Use this script to import into a mysql database all .csv files from relational-data/evanston_healthscores/
+  ... adding unique identifiers as applicable thanks to http://stackoverflow.com/a/13550826/670433
 */
 
 DROP DATABASE IF EXISTS evanston_healthscores;
@@ -90,7 +91,118 @@ ALTER TABLE evanston_healthscores.businesses ADD PRIMARY KEY(business_id);
   INSPECTIONS
 */
 
+DROP TABLE IF EXISTS evanston_healthscores.inspections_temp;
+CREATE TABLE evanston_healthscores.inspections_temp (
+  `business_id` VARCHAR(255) DEFAULT NULL,
+  `score` INT(11) DEFAULT NULL,
+  `date` INT(11) DEFAULT NULL,
+  `type` VARCHAR(255) DEFAULT NULL
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+LOAD DATA LOCAL INFILE '~/projects/gwu-business/open-data-library/relational-data/evanston_healthscores/inspections.csv'
+INTO TABLE evanston_healthscores.inspections_temp
+FIELDS
+  TERMINATED BY ','
+  ENCLOSED BY '"'
+LINES TERMINATED BY '\n' -- mac-style line breaks
+  IGNORE 1 LINES
+;
+
+SELECT
+  business_id
+ , count(*) AS row_count
+FROM inspections_temp
+GROUP BY business_id
+HAVING row_count > 1
+ORDER BY 2 DESC; -- business_id is not a primary key
+
+SELECT
+  i.business_id
+  ,i.date
+ , count(*) AS row_count
+FROM inspections_temp i
+GROUP BY 1,2
+HAVING row_count > 1
+ORDER BY 3 DESC; -- business_id and date do not comprise a composite primary key...
+
+DROP TABLE IF EXISTS evanston_healthscores.inspections;
+SET @row_num = 0;
+CREATE TABLE  evanston_healthscores.inspections AS (
+  SELECT
+    @row_num := @row_num + 1 AS id
+    ,i.business_id
+    ,i.score
+    ,str_to_date(
+     concat(
+        LEFT(i.date,4)
+        ,"-"
+        ,substring(i.date, 5,2)
+        ,"-"
+        ,RIGHT(i.date,2)
+      ), '%Y-%m-%d'
+    ) AS `date`
+    ,i.type
+  FROM evanston_healthscores.inspections_temp i
+);
+
+DROP TABLE IF EXISTS evanston_healthscores.inspections_temp; -- clean-up
 
 /*
   VIOLATIONS
 */
+
+DROP TABLE IF EXISTS evanston_healthscores.violations_temp;
+CREATE TABLE evanston_healthscores.violations_temp (
+  `business_id` varchar(255) DEFAULT NULL,
+  `date` int(11) DEFAULT NULL,
+  `code` varchar(255) DEFAULT NULL,
+  `description` text
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
+
+LOAD DATA LOCAL INFILE '~/projects/gwu-business/open-data-library/relational-data/evanston_healthscores/violations.csv'
+INTO TABLE evanston_healthscores.violations_temp
+FIELDS
+  TERMINATED BY ','
+  ENCLOSED BY '"'
+LINES TERMINATED BY '\n' -- mac-style line breaks
+  IGNORE 1 LINES
+;
+
+SELECT
+  business_id
+ , count(*) AS row_count
+FROM violations_temp
+GROUP BY business_id
+HAVING row_count > 1
+ORDER BY 2 DESC; -- business_id is not a primary key
+
+SELECT
+  i.business_id
+  ,i.date
+ , count(*) AS row_count
+FROM violations_temp i
+GROUP BY 1,2
+HAVING row_count > 1
+ORDER BY 3 DESC; -- business_id and date do not comprise a composite primary key...
+
+DROP TABLE IF EXISTS evanston_healthscores.violations;
+SET @row_num = 0;
+CREATE TABLE  evanston_healthscores.violations AS (
+  SELECT
+    @row_num := @row_num + 1 AS id
+    ,v.business_id
+    ,str_to_date(
+     concat(
+        LEFT(v.date,4)
+        ,"-"
+        ,substring(v.date, 5,2)
+        ,"-"
+        ,RIGHT(v.date,2)
+      ), '%Y-%m-%d'
+    ) AS `date`
+    ,v.code
+    ,v.description
+  FROM evanston_healthscores.violations_temp v
+);
+
+DROP TABLE IF EXISTS evanston_healthscores.violations_temp; -- clean-up
