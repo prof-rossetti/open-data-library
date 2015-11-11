@@ -210,11 +210,11 @@ DROP TABLE IF EXISTS evanston_healthscores.violations_temp; -- clean-up
 
 
 /*
-  REPORTS
+  REPORTS ...
 */
 
 /*
-  BUSINESS INSPECTIONS
+  BUSINESS INSPECTIONS RPT
 */
 
 SELECT *
@@ -245,7 +245,7 @@ CREATE TABLE evanston_healthscores._business_inspections_report AS (
 );
 
 /*
-  BUSINESS VIOLATIONS
+  BUSINESS VIOLATIONS RPT
 */
 
 SELECT *
@@ -272,3 +272,38 @@ CREATE TABLE evanston_healthscores._business_violations_report AS (
     ,IF(v.description LIKE "%CRITICAL VIOLATION%",1,0) AS violation_critical
   FROM evanston_healthscores.violations v
 );
+
+/*
+  TOP VIOLATORS RPT
+*/
+
+DROP TABLE IF EXISTS _top_violators_report;
+CREATE TABLE _top_violators_report AS (
+    SELECT
+      b.business_id
+      ,b.name AS business_name
+      ,b.latitude AS business_lat
+      ,b.longitude AS business_lon
+      ,count(DISTINCT concat(v.business_id, v.date)) AS inspection_count
+      ,count(DISTINCT v.id) AS violation_count
+      ,min(v.date) AS earliest_violation
+      ,max(v.date) AS latest_violation
+    FROM businesses b
+    LEFT JOIN violations v ON b.business_id = v.business_id
+    GROUP BY b.business_id
+    ORDER BY violation_count DESC, inspection_count
+);
+
+
+/*
+  EXPORTS ...
+
+SELECT *
+FROM _top_violators_report
+INTO OUTFILE '~/projects/gwu-business/healthscores-web-viz/data/top_violators.csv'
+FIELDS TERMINATED BY ','
+ENCLOSED BY '"'
+LINES TERMINATED BY '\n'
+;
+
+*/
