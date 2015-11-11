@@ -277,8 +277,8 @@ CREATE TABLE evanston_healthscores._business_violations_report AS (
   TOP VIOLATORS RPT
 */
 
-DROP TABLE IF EXISTS _top_violators_report;
-CREATE TABLE _top_violators_report AS (
+DROP TABLE IF EXISTS evanston_healthscores._top_violators_report;
+CREATE TABLE evanston_healthscores._top_violators_report AS (
     SELECT
       b.business_id
       ,b.name AS business_name
@@ -288,8 +288,8 @@ CREATE TABLE _top_violators_report AS (
       ,count(DISTINCT v.id) AS violation_count
       ,min(v.date) AS earliest_violation
       ,max(v.date) AS latest_violation
-    FROM businesses b
-    LEFT JOIN violations v ON b.business_id = v.business_id
+    FROM evanston_healthscores.businesses b
+    LEFT JOIN evanston_healthscores.violations v ON b.business_id = v.business_id
     GROUP BY b.business_id
     ORDER BY violation_count DESC, inspection_count
 );
@@ -299,7 +299,7 @@ CREATE TABLE _top_violators_report AS (
   EXPORTS ...
 
 SELECT *
-FROM _top_violators_report
+FROM evanston_healthscores._top_violators_report
 INTO OUTFILE '~/projects/gwu-business/healthscores-web-viz/data/top_violators.csv'
 FIELDS TERMINATED BY ','
 ENCLOSED BY '"'
